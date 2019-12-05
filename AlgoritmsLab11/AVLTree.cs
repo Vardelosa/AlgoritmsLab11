@@ -1,36 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace AlgoritmsLab11
+namespace alg8
 {
-    class AVLTree
+    class AVLTree<T> where T: IComparable<T>
     {
-        Node Root;
+        private Node<T> Root { get; set; }
 
-        public int count;
-
-        private Node RotateRight(Node root)
+        private Node<T> RotateRight(Node<T> root)
         {
-            Node left = root.Left;
+            Node<T> left = root.Left;
 
             root.Left = left.Right;
             left.Right = root;
 
             return left;
         }
-        private Node RotateLeft(Node root)
+
+        private Node<T> RotateLeft(Node<T> root)
         {
-            Node right = root.Right;
+            Node<T> right = root.Right;
 
             root.Right = right.Left;
             right.Left = root;
 
             return right;
         }
-        private Node Balance(Node root)
+
+        private Node<T> Balance(Node<T> root)
         {
             if (root.BalanceFactor == -2)
             {
@@ -42,9 +40,9 @@ namespace AlgoritmsLab11
                 return RotateLeft(root);
             }
 
-            if (root.BalanceFactor == 2)
+            if(root.BalanceFactor == 2)
             {
-                if (root.Left.BalanceFactor < 0)
+                if(root.Left.BalanceFactor < 0)
                 {
                     root.Left = RotateLeft(root.Left);
                 }
@@ -54,230 +52,97 @@ namespace AlgoritmsLab11
 
             return root;
         }
-        public void Add(int value)
+
+        public void Add(T item)
         {
-            if (Root == null)
-                Root = new Node(value);
-
-            else
-                StepAdd(Root, value);
-
-            count++;
+            Root = InsertNode(Root, item);
         }
-        public void StepAdd(Node node, int value)
+
+        public void Remove(T item)
         {
-            if (value < node.Data)
-            {
-                if (node.Left == null)
-                {
-                    node.Left = new Node(value);
-                }
-                else
-                {
-                    StepAdd(node.Left, value);
-                }
-            }
-            if (value > node.Data)
-            {
-                if (node.Right == null)
-                {
-                    node.Right = new Node(value);
-                }
-                else
-                {
-                    StepAdd(node.Right, value);
-                }
-            }
+            Root = RemoveNode(Root, item);
         }
-        public bool Contains(int value)
+
+        private Node<T> RemoveNode(Node<T> root, T item)
         {
-            Node parent;
+            if (root == null)
+                return null;
 
-            return Find(value, out parent) != null;
-        }
-        private Node Find(int value, out Node parent)
-        {
-            Node current = Root;
-
-            parent = null;
-
-            while (current != null)
-            {
-                if (current.Data > value)//Если искомое меньше
-                {
-                    parent = current;
-                    current = current.Left;
-                }
-                else if (current.Data < value)//Если искомое больше
-                {
-                    parent = current;
-                    current = current.Right;
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            return current;
-        }
-        public bool Delete(int value)
-        {
-            Node current, parent;
-
-            current = Find(value, out parent);
-
-            if (current == null)
-                return false;
-
-            count--;
-
-            if (current.Right == null)
-            {
-                if (parent == null)
-                {
-                    Root = current.Left;
-                }
-                else
-                {
-                    if (parent.Data > current.Data)
-                    {
-                        parent.Left = current.Left;
-                    }
-                    else if (parent.Data < current.Data)
-                    {
-                        parent.Right = current.Left;
-                    }
-                }
-            }
-            else if (current.Right.Left == null)
-            {
-                current.Right.Left = current.Left;
-
-                if (parent == null)
-                {
-                    Root = current.Left;
-                }
-                else
-                {
-                    if (parent.Data > current.Data)
-                    {
-                        parent.Left = current.Right;
-                    }
-                    else if (parent.Data < current.Data)
-                    {
-                        parent.Right = current.Right;
-                    }
-                }
-            }
+            if (item.CompareTo(root.Item) == -1)
+                root.Left = RemoveNode(root.Left, item);
+            else if (item.CompareTo(root.Item) == 1)
+                root.Right = RemoveNode(root.Right, item);
             else
             {
-                Node leftmost = current.Right.Left;
-                Node leftmostparent = current.Right;
-                while (leftmost.Left != null)
-                {
-                    leftmostparent = leftmost;
-                    leftmost = leftmost.Left;
-                }
-                leftmostparent.Left = leftmost.Right;
+                if (root.Right == null)
+                    return root.Left;
 
-                leftmost.Left = current.Left;
-                leftmost.Right = current.Right;
+                if (root.Left == null)
+                    return root.Right;
 
-                if (parent == null)
-                {
-                    Root = current.Left;
-                }
-                else
-                {
-                    if (parent.Data > current.Data)
-                    {
-                        parent.Left = leftmost;
-                    }
-                    else if (parent.Data < current.Data)
-                    {
-                        parent.Right = leftmost;
-                    }
-                }
+                Node<T> rightMinimum = FindMinimum(root.Right);
+                rightMinimum.Right = RemoveNode(root.Right, rightMinimum.Item);
+                rightMinimum.Left = root.Left;
+
+                return Balance(rightMinimum);
             }
-            return true;
-        }
-        public void PryamoiObhodFind(int element)
-        {
-            Steps = 0;
-            PryamoiObhodFind(element, Root);
-        }
-        int Steps;
-        private void PryamoiObhodFind(int element, Node node)
-        {
-            if (node != null)
-            {
-                if (element == node.Data)
-                {
-                    Console.WriteLine($"Element '{node.Data}' has been found. Steps was made: {Steps}");
-                }
-                Steps++;
-                PryamoiObhodFind(element, node.Left);
-                PryamoiObhodFind(element, node.Right);
-            }
-        }
-        public void ObratniyObhodFind(int element)
-        {
-            Steps = 0;
-            ObratniyObhodFind(element, Root);
+
+            return Balance(root);
         }
 
-        private void ObratniyObhodFind(int element, Node node)
+        private Node<T> InsertNode(Node<T> root, T item)
         {
-            if (node != null)
+            if (root == null)
+                return new Node<T>(item);
+
+            if (item.CompareTo(root.Item) == -1)
             {
-                ObratniyObhodFind(element, node.Left);
-                ObratniyObhodFind(element, node.Right);
-                if (element == node.Data)
-                {
-                    Console.WriteLine($"Element '{node.Data}' has been found. Steps was made: {Steps}");
-                }
-                Steps++;
+                root.Left = InsertNode(root.Left, item);
             }
-        }
-        public void FindTheWayPryamoi()
-        {
-            Steps = 0;
-            FindTheWayPryamoi(Root);
-        }
-        private void FindTheWayPryamoi(Node node)
-        {
-            if (node != null)
+            else if (item.CompareTo(root.Item) == 1)
             {
-                if (node.Right == null & node.Left == null)
-                {
-                    Console.WriteLine("The way: {0}", Steps);
-                    Steps = 0;
-                }
-                Steps++;
-                FindTheWayPryamoi(node.Left);
-                FindTheWayPryamoi(node.Right);
+                root.Right = InsertNode(root.Right, item);
             }
+
+            return Balance(root);
         }
-        public void FindTheWayObratniy()
+
+        private Node<T> FindMinimum(Node<T> root)
         {
-            Steps = 0;
-            FindTheWayObratniy(Root);
+            return root.Left != null ? FindMinimum(root.Left) : root;
         }
-        private void FindTheWayObratniy(Node node)
+
+        private Node<T> Search(T item, Node<T> node)
         {
-            if (node != null)
-            {
-                FindTheWayObratniy(node.Left);
-                FindTheWayObratniy(node.Right);
-                if (node.Right == null & node.Left == null)
-                {
-                    Console.WriteLine("The way: {0}", Steps);
-                    Steps = 0;
-                }
-                Steps++;
-                
-            }
+            if (node == null || item.CompareTo(node.Item) == 0)
+                return node;
+
+            if (item.CompareTo(node.Item) == - 1)
+                return Search(item, node.Left);
+            else
+                return Search(item, node.Right);
+        }
+        private void Traverse(Node<T> node, ref string info, int n = 0)
+        {
+            if (node == null)
+                return;
+
+            Traverse(node.Right, ref info, n + 5);
+
+            string temp = "";
+            for (int i = 0; i < n; ++i)
+                temp += " ";
+            info += temp + node + "\n";
+
+            Traverse(node.Left, ref info, n + 5);
+        }
+
+        public override string ToString()
+        {
+            string info = "";
+            Traverse(Root, ref info);
+
+            return info;
         }
     }
 }

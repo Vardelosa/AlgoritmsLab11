@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace AlgoritmsLab11
+namespace alg8
 {
-    class Node
+    class Node<T> : IComparable<Node<T>> where T : IComparable<T>
     {
-        public int Data { get; private set; }
-        public Node Left { get; set; }
-        public Node Right { get; set; }
-        public int Height
-        {
+        public T Item { get; set; }
+
+        public int Height 
+        { 
             get
             {
                 int leftHeight = Left != null ? Left.Height : 0;
@@ -21,6 +18,7 @@ namespace AlgoritmsLab11
                 return (leftHeight > rightHeight ? leftHeight : rightHeight) + 1;
             }
         }
+
         public int BalanceFactor
         {
             get
@@ -31,21 +29,31 @@ namespace AlgoritmsLab11
                 return leftHeight - rightHeight;
             }
         }
-        public Node() : this(default(int))
+
+        public Node<T> Left { get; set; }
+        public Node<T> Right { get; set; }
+
+        public Node() : this(default(T))
         { }
 
-        public Node(int data) : this(data, null, null)
+        public Node(T item): this(item, null, null)
         { }
 
-        public Node(int data, Node left, Node right)
+        public Node(T item, Node<T> left, Node<T> right)
         {
-            Data = data;
-            this.Left = left;
-            this.Right = right;
+            Item = item;
+            Left = left;
+            Right = right;
         }
 
+        public int CompareTo(Node<T> other)
+        {
+            return Item.CompareTo(other.Item);
+        }
 
-
-
+        public override string ToString()
+        {
+            return Item.ToString();
+        }
     }
 }
